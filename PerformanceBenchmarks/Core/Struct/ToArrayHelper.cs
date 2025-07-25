@@ -5,8 +5,7 @@ namespace PerformanceBenchmarks.Core.Struct;
 
 public static class ToArrayHelper
 {
-    public static TOut[] ToArray<TEnumerator, TIn, TOut>(this InternalWhereSelect<TEnumerator, TIn, TOut> enumerator)
-        where TEnumerator : struct, IStructEnumerator<TIn>
+    public static TOut[] ToArray<TIn, TOut>(this InternalWhereSelectArray<TIn, TOut> enumerator)
     {
         TOut[] result = null;
 
@@ -16,7 +15,7 @@ public static class ToArrayHelper
         int idx = 0;
         while (enumerator.Next(ref current))
         {
-            arr.Add(current);
+             arr.Add(current);
         }
 
         result = arr.ToArray();
@@ -26,8 +25,7 @@ public static class ToArrayHelper
         return result;
     }
     
-    public static T[] ToArray<TEnumerator, T>(this InternalWhere<TEnumerator, T> enumerator) //gamechanger
-        where TEnumerator : struct, IStructEnumerator<T>
+    public static T[] ToArray<T>(this InternalWhereArray<T> enumerator)
     {
         T[] result = null;
 

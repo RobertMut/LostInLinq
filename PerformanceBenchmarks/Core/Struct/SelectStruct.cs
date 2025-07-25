@@ -7,19 +7,16 @@ public static class SelectStruct
 {
     public static IStructEnumerator<TOut> StructSelect<TIn, TOut>(this TIn[] array, Func<TIn, TOut> selector)
     {
-        return new StructEnumerator<TIn>(array).StructSelect(selector);
+        return new ArrayStructEnumerator<TIn>(array).InternalStructSelectArray(selector);
     }
-    
-    public static InternalWhereSelect<TEnumerable, TIn, TOut> StructSelect<TEnumerable, TIn, TOut>(
-        this InternalWhere<TEnumerable, TIn> source, Func<TIn, TOut> selector)
-        where TEnumerable : IStructEnumerator<TIn> =>
-        new(source._source, source._filter, selector);
 
-    public static IStructEnumerator<TOut> StructSelect<TEnumerable, TIn, TOut>(this TEnumerable source, Func<TIn, TOut> selector)
-        where TEnumerable : IStructEnumerator<TIn>
-    {
-        return new InternalSelect<TEnumerable, TIn, TOut>(source, selector);
-    }
+    public static InternalWhereSelectArray<TIn, TOut> StructSelect<TIn, TOut>(
+        this InternalWhereArray<TIn> source, Func<TIn, TOut> selector) =>
+        new(source._source._array, source._filter, selector);
+
+    private static IStructEnumerator<TOut> InternalStructSelectArray<TEnumerator, TIn, TOut>(
+        this TEnumerator source, Func<TIn, TOut> selector)
+        where TEnumerator : IStructEnumerator<TIn> => new InternalSelect<TEnumerator, TIn, TOut>(source, selector);
 }
 
 public struct InternalSelect<TEnumerator, TIn, TOut> : IStructEnumerator<TOut>

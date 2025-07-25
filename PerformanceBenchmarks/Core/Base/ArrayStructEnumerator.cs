@@ -2,13 +2,13 @@
 
 namespace PerformanceBenchmarks.Core.Base;
 
-public struct StructEnumerator<T> : IStructEnumerator<T>
+public struct ArrayStructEnumerator<T> : IStructEnumerator<T>
 {
-    private readonly T[] _array;
+    internal readonly T[] _array;
     private int _index;
     private readonly int _count;
 
-    public StructEnumerator(T[] array)
+    public ArrayStructEnumerator(T[] array)
     {
         _array = array ?? throw new ArgumentNullException(nameof(array));
         _count = array.Length;
