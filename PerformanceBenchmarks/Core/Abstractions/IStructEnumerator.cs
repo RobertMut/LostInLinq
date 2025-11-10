@@ -1,6 +1,6 @@
 ﻿namespace PerformanceBenchmarks.Core.Abstractions;
 
-public interface IStructEnumerator<T> : IDisposable
+public interface IStructEnumerator<T> : IDisposable 
 {
     bool Next(ref T current);
 

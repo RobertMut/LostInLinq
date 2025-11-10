@@ -2,7 +2,7 @@
 
 namespace PerformanceBenchmarks.Core.Base;
 
-public struct ArrayStructEnumerator<T> : IStructEnumerator<T>
+public ref struct ArrayStructEnumerator<T> : IStructEnumerator<T>
 {
     internal readonly T[] _array;
     private int _index;

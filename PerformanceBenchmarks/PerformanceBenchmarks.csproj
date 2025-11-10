@@ -8,8 +8,27 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="BenchmarkDotNet" Version="0.15.2" />
+      <PackageReference Include="BenchmarkDotNet" Version="0.15.6" />
+      <PackageReference Include="BenchmarkDotNet.Diagnostics.dotMemory" Version="0.15.6" />
+      <PackageReference Include="BenchmarkDotNet.Diagnostics.dotTrace" Version="0.15.6" />
       <PackageReference Include="ZLinq" Version="1.5.1" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Compile Remove="MinimalHashSet\MyHashSet\Program.cs" />
+      <Content Include="MinimalHashSet\MyHashSet\Program.cs" />
+      <Compile Remove="MinimalHashSet\MyHashSet\Performance\AddBenchmark.cs" />
+      <Content Include="MinimalHashSet\MyHashSet\Performance\AddBenchmark.cs" />
+      <Compile Remove="MinimalHashSet\MyHashSet\Performance\ContainsBenchmark.cs" />
+      <Content Include="MinimalHashSet\MyHashSet\Performance\ContainsBenchmark.cs" />
+      <Compile Remove="MinimalHashSet\MyHashSet.UnitTests\UnitTest.cs" />
+      <Content Include="MinimalHashSet\MyHashSet.UnitTests\UnitTest.cs" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Reference Include="PerformanceBenchmarks">
+        <HintPath>..\PerformanceBenchmarks.Tests\bin\Release\net9.0\PerformanceBenchmarks.dll</HintPath>
+      </Reference>
     </ItemGroup>
 
 </Project>

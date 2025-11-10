@@ -72,9 +72,10 @@ public class SelectWhereVsWhereSelectBenchmark
     [ArgumentsSource(nameof(Data))]
     public void NonAllocWhereSelect_WithoutShortcut(Example[] input)
     {
-        new InternalSelect<InternalWhere<ArrayStructEnumerator<Example>, Example>, Example, NewExample>(
-                new InternalWhere<ArrayStructEnumerator<Example>, Example>(new ArrayStructEnumerator<Example>(input),
-                    x => x.ExampleString[0] == 'c' || x.ExampleString[1] == '2'), x => new NewExample())
+        new StructEnumerable<InternalSelect<InternalWhere<ArrayStructEnumerator<Example>, Example>, Example, NewExample>, NewExample>(
+                new InternalSelect<InternalWhere<ArrayStructEnumerator<Example>, Example>, Example, NewExample>(
+                    new InternalWhere<ArrayStructEnumerator<Example>, Example>(new ArrayStructEnumerator<Example>(input),
+                        x => x.ExampleString[0] == 'c' || x.ExampleString[1] == '2'), x => new NewExample()))
             .ToArray()
             .Consume(new Consumer());
     }
