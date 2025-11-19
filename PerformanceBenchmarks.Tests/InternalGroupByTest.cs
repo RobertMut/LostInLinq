@@ -20,17 +20,17 @@ public class InternalGroupByTest
     [Test]
     public void StructGroupBy_ShouldBe_TheSameAsLinq_And_EachKeyIsCorrectlyGrouped()
     {
-        StructEnumerable<InternalGroupBy<ArrayStructEnumerator<TestData>, double, TestData>, Grouping<double, TestData>> myGroupBy =
+        StructEnumerable<InternalGroupBy<ArrayStructEnumerator<TestData>, double, TestData>, ReadOnlyGrouping<double, TestData>> myGroupBy =
             _testData.StructGroupBy(x => Math.Ceiling(x.Number * 100 % 3));
         Dictionary<double, List<TestData>> linqGroupBy = _testData.GroupBy(x => Math.Ceiling((x.Number * 100) % 3))
             .ToDictionary(x => x.Key, v => v.ToList());
         Dictionary<double, List<TestData>> dictionary = new Dictionary<double, List<TestData>>();
-        Grouping<double, TestData> grouping = default;
+        ReadOnlyGrouping<double, TestData> grouping = default;
         while (myGroupBy.Enumerator.Next(ref grouping))
         {
-            if (!dictionary.TryAdd(grouping.Key, grouping.AsSpan().ToArray().ToList()))
+            if (!dictionary.TryAdd(grouping.Key, grouping.Elements.ToArray().ToList()))
             {
-                dictionary[grouping.Key].AddRange(grouping.AsSpan());
+                dictionary[grouping.Key].AddRange(grouping.Elements);
             }
         }
 
@@ -45,7 +45,9 @@ public class InternalGroupByTest
     public void StructGroupBy_Should_ProcessEmptyCollection()
     {
         var myGroupBy = new object[] { }.StructGroupBy(x => x).ToArray();
-        myGroupBy.ShouldBeNull();
+        
+        myGroupBy.ShouldNotBeNull();
+        myGroupBy.Length.ShouldBe(0);
     }
 
     [Test]
@@ -65,10 +67,10 @@ public class InternalGroupByTest
 
         var myGroupBy = numbers.StructGroupBy(x => x % 5);
         var dictionary = new Dictionary<int, List<int>>();
-        Grouping<int, int> grouping = default;
+        ReadOnlyGrouping<int, int> grouping = default;
         while (myGroupBy.Enumerator.Next(ref grouping))
         {
-            dictionary[grouping.Key] = grouping.AsSpan().ToArray().ToList();
+            dictionary[grouping.Key] = grouping.Elements.ToArray().ToList();
         }
 
         linqGroupBy.Keys.OrderBy(k => k).ShouldBe(dictionary.Keys.OrderBy(k => k));
@@ -82,12 +84,11 @@ public class InternalGroupByTest
     public void StructGroupBy_Should_HandleSingleGroup()
     {
         var numbers = new[] { 1, 1, 1, 1, 1 };
-        var linqResult = numbers.GroupBy(x => x).ToArray();
         var structResult = numbers.StructGroupBy(x => x).ToArray();
 
         structResult.Length.ShouldBe(1);
         structResult[0].Key.ShouldBe(1);
-        structResult[0].AsSpan().Length.ShouldBe(5);
+        structResult[0].Elements.Length.ShouldBe(5);
     }
 
     [Test]
@@ -98,10 +99,10 @@ public class InternalGroupByTest
         var structResult = numbers.StructGroupBy(x => x);
 
         var dictionary = new Dictionary<int, int>();
-        Grouping<int, int> grouping = default;
+        ReadOnlyGrouping<int, int> grouping = default;
         while (structResult.Enumerator.Next(ref grouping))
         {
-            dictionary[grouping.Key] = grouping.ElementCount;
+            dictionary[grouping.Key] = grouping.Count;
         }
 
         dictionary.Count.ShouldBe(5);
@@ -116,15 +117,15 @@ public class InternalGroupByTest
     {
         var words = new[] { "apple", "banana", "apricot", "blueberry", "avocado", "berry" };
         var linqGroupBy = words.GroupBy(x => x[0].ToString()).ToDictionary(g => g.Key, g => g.ToList());
-
         var myGroupBy = words.StructGroupBy(x => x[0].ToString());
+        
         var dictionary = new Dictionary<string, List<string>>();
-        Grouping<string, string> grouping = default;
+        ReadOnlyGrouping<string, string> grouping = default;
+        
         while (myGroupBy.Enumerator.Next(ref grouping))
         {
-            dictionary[grouping.Key] = grouping.AsSpan().ToArray().ToList();
+            dictionary[grouping.Key] = grouping.Elements.ToArray().ToList();
         }
-
         linqGroupBy.Keys.OrderBy(k => k).ShouldBe(dictionary.Keys.OrderBy(k => k));
         foreach (var key in linqGroupBy.Keys)
         {
@@ -140,10 +141,10 @@ public class InternalGroupByTest
 
         var myGroupBy = data.StructGroupBy(x => x % 100);
         var dictionary = new Dictionary<int, int>();
-        Grouping<int, int> grouping = default;
+        ReadOnlyGrouping<int, int> grouping = default;
         while (myGroupBy.Enumerator.Next(ref grouping))
         {
-            dictionary[grouping.Key] = grouping.ElementCount;
+            dictionary[grouping.Key] = grouping.Count;
         }
 
         dictionary.Count.ShouldBe(100);
@@ -161,10 +162,10 @@ public class InternalGroupByTest
 
         var myGroupBy = data.StructGroupBy(x => x);
         var dictionary = new Dictionary<int, int>();
-        Grouping<int, int> grouping = default;
+        ReadOnlyGrouping<int, int> grouping = default;
         while (myGroupBy.Enumerator.Next(ref grouping))
         {
-            dictionary[grouping.Key] = grouping.ElementCount;
+            dictionary[grouping.Key] = grouping.Count;
         }
 
         dictionary.Count.ShouldBe(2);
@@ -188,10 +189,10 @@ public class InternalGroupByTest
             .StructGroupBy(x => x % 10);
 
         var dictionary = new Dictionary<int, List<int>>();
-        Grouping<int, int> grouping = default;
+        ReadOnlyGrouping<int, int> grouping = default;
         while (structGroupBy.Enumerator.Next(ref grouping))
         {
-            dictionary[grouping.Key] = grouping.AsSpan().ToArray().ToList();
+            dictionary[grouping.Key] = grouping.Elements.ToArray().ToList();
         }
 
         linqResult.Keys.OrderBy(k => k).ShouldBe(dictionary.Keys.OrderBy(k => k));

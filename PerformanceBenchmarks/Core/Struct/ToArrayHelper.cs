@@ -17,17 +17,26 @@ public static class ToArrayHelper
         return enumerable.Enumerator.FromArrayBuilder<InternalWhereArray<T>, T>();
     }
 
-    public static Grouping<TKey, TElement>[] ToArray<TEnumerator, TKey, TElement>(
-        this StructEnumerable<InternalGroupBy<TEnumerator, TKey, TElement>, Grouping<TKey, TElement>> enumerator)
+    public static ReadOnlyGrouping<TKey, TElement>[] ToArray<TEnumerator, TKey, TElement>(
+        this StructEnumerable<InternalGroupBy<TEnumerator, TKey, TElement>, ReadOnlyGrouping<TKey, TElement>> enumerator)
         where TEnumerator : struct, IStructEnumerator<TElement>, allows ref struct
     {
-        ReadOnlySpan<Grouping<TKey, TElement>> span = default;
-        if (enumerator.Enumerator.GetUnderlying(ref span))
+        ReadOnlyGrouping<TKey, TElement>[] result = null;
+        if (enumerator.Enumerator.GetCountToLeftEnumerate(out int count))
         {
-            return span.ToArray();
+            result = GC.AllocateUninitializedArray<ReadOnlyGrouping<TKey, TElement>>(count);
+            
+            ReadOnlyGrouping<TKey, TElement> current = default;
+            int idx = 0;
+            while (enumerator.Enumerator.Next(ref current))
+            {
+                result[idx++] = current;
+            }
+            
+            return result;
         }
-
-        return null;
+        
+        return [];
     }
 
     public static TOut[] ToArray<TEnumerator, TIn, TOut>(

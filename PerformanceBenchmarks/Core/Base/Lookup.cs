@@ -21,7 +21,7 @@ public ref struct Lookup<TKey, TElement> : IDisposable
     private int _lastGroupIndex;
     private uint _bucketMask;
 
-    public Lookup(IEqualityComparer<TKey>? comparer = null)
+    private Lookup(IEqualityComparer<TKey>? comparer = null)
     {
         _comparer = comparer ?? EqualityComparer<TKey>.Default;
         _bucketMask = InitialCapacity - 1;
@@ -66,35 +66,24 @@ public ref struct Lookup<TKey, TElement> : IDisposable
 
         return lookup;
     }
-
+    
     public int Count => _count;
 
-    public Grouping<TKey, TElement>? GetGroupingByIndex(int index)
+    public readonly ref readonly Grouping<TKey, TElement> GetGroupingByIndex(int index)
     {
         if (index < 1 || index > _count)
         {
-            return null;
+            throw new ArgumentOutOfRangeException();
         }
 
         ref Grouping<TKey, TElement> entry = ref _entries[index - 1];
 
-        if (entry.Elements == null || entry.ElementCount == 0)
-        {
-            return null;
-        }
+        return ref entry;
+    }
 
-        TElement[] array = new TElement[entry.ElementCount];
-        entry.Elements.AsSpan(0, entry.ElementCount).CopyTo(array);
-
-        return new Grouping<TKey, TElement>
-        {
-            HashCode = entry.HashCode,
-            Key = entry.Key,
-            HashNext = entry.HashNext,
-            Next = entry.Next,
-            Elements = array, 
-            ElementCount = entry.ElementCount
-        };
+    public LookupIterator GetIterator()
+    {
+        return new LookupIterator(_entries.AsSpan(0, _count));
     }
 
     public void Add(TKey key, TElement value)
@@ -230,12 +219,56 @@ public ref struct Lookup<TKey, TElement> : IDisposable
         return (int)(hashCode & _bucketMask);
     }
 
-    public void Dispose()
+    public readonly void Dispose()
     {
         if (_buckets != null)
         {
             ArrayPool<int>.Shared.Return(_buckets);
             ArrayPool<Grouping<TKey, TElement>>.Shared.Return(_entries);
         }
+    }
+    
+    public ref struct LookupIterator
+    {
+        private int _index;
+        private readonly int _count;
+        private readonly ReadOnlySpan<Grouping<TKey, TElement>> _entries;
+
+        public LookupIterator(ReadOnlySpan<Grouping<TKey, TElement>> groups)
+        {
+            _entries = groups;
+            _count = groups.Length;
+            _index = 0;
+        }
+
+        public bool Next()
+        {
+            while (++_index <= _count)
+            {
+                ref readonly Grouping<TKey, TElement> entry = ref _entries[_index - 1];
+                if (entry.Elements != null && entry.ElementCount > 0)
+                {
+                    return true;
+                }
+
+            }
+            return false;
+        }
+
+        public ReadOnlyGrouping<TKey, TElement> Current
+        {
+            get
+            {
+                if(_index < 0 || _index > _count)
+                {
+                    throw new InvalidOperationException();
+                }
+
+                ref readonly var entry = ref _entries[_index - 1];
+                return new ReadOnlyGrouping<TKey, TElement>(in entry);
+            }
+        }
+
+        public int Remaining => _count - _index;
     }
 }
