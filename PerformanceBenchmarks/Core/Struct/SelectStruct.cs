@@ -1,4 +1,5 @@
-﻿using PerformanceBenchmarks.Core.Abstractions;
+﻿using System.Runtime.CompilerServices;
+using PerformanceBenchmarks.Core.Abstractions;
 using PerformanceBenchmarks.Core.Base;
 
 namespace PerformanceBenchmarks.Core.Struct;
@@ -46,8 +47,8 @@ where TEnumerator : struct, IStructEnumerator<TIn>, allows ref struct
             current = Selector(fromSource);
             return true;
         }
-
-        current = default(TOut);
+        
+        Unsafe.SkipInit(out current);
         return false;
     }
 
@@ -60,14 +61,13 @@ where TEnumerator : struct, IStructEnumerator<TIn>, allows ref struct
             return true;
         }
 
-        count = 0;
+        Unsafe.SkipInit(out count);
         return false;
     }
 
     public bool GetUnderlying(ref ReadOnlySpan<TOut> span)
     {
-        span = default;
-
+        Unsafe.SkipInit(out span);
         return false;
     }
 
@@ -76,13 +76,15 @@ where TEnumerator : struct, IStructEnumerator<TIn>, allows ref struct
 
 public ref struct InternalSelectArray<TIn, TOut> : IStructEnumerator<TOut>
 {
-    internal ArrayStructEnumerator<TIn> _source;
-    internal readonly Func<TIn, TOut> Selector;
+    private ArrayStructEnumerator<TIn> _source;
+    private Span<TIn> _span;
+    private readonly Func<TIn, TOut> _selector;
 
     public InternalSelectArray(ArrayStructEnumerator<TIn> source, Func<TIn, TOut> selector)
     {
         _source = source;
-        Selector = selector;
+        _span = source.Array.AsSpan();
+        _selector = selector;
     }
 
     public void Dispose()
@@ -92,14 +94,12 @@ public ref struct InternalSelectArray<TIn, TOut> : IStructEnumerator<TOut>
 
     public bool Next(ref TOut current)
     {
-        TIn? fromSource = default(TIn);
-        if (_source.Next(ref fromSource))
+        if (_source.Index < _source.Count - 1)
         {
-            current = Selector(fromSource);
+            current = _selector(_span[++_source.Index]);
             return true;
         }
 
-        current = default(TOut);
         return false;
     }
 
@@ -112,14 +112,12 @@ public ref struct InternalSelectArray<TIn, TOut> : IStructEnumerator<TOut>
             return true;
         }
 
-        count = 0;
+        Unsafe.SkipInit(out count);
         return false;
     }
 
     public bool GetUnderlying(ref ReadOnlySpan<TOut> span)
     {
-        span = default;
-
         return false;
     }
 
