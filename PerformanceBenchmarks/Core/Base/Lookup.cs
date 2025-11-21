@@ -69,18 +69,6 @@ public ref struct Lookup<TKey, TElement> : IDisposable
     
     public int Count => _count;
 
-    public readonly ref readonly Grouping<TKey, TElement> GetGroupingByIndex(int index)
-    {
-        if (index < 1 || index > _count)
-        {
-            throw new ArgumentOutOfRangeException();
-        }
-
-        ref Grouping<TKey, TElement> entry = ref _entries[index - 1];
-
-        return ref entry;
-    }
-
     public LookupIterator GetIterator()
     {
         return new LookupIterator(_entries.AsSpan(0, _count));
@@ -224,6 +212,12 @@ public ref struct Lookup<TKey, TElement> : IDisposable
         if (_buckets != null)
         {
             ArrayPool<int>.Shared.Return(_buckets);
+            
+            foreach (var entry in _entries)
+            {
+               ArrayPool<TElement>.Shared.Return(entry.Elements); 
+            }
+            
             ArrayPool<Grouping<TKey, TElement>>.Shared.Return(_entries);
         }
     }

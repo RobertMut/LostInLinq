@@ -42,6 +42,4 @@ public readonly struct ReadOnlyGrouping<TKey, TElement>
     public ReadOnlySpan<TElement> Elements => _grouping.Elements != null
         ? _grouping.Elements.AsSpan(0, _grouping.ElementCount)
         : ReadOnlySpan<TElement>.Empty;
-
-    public TElement this[int index] => _grouping[index];
 }

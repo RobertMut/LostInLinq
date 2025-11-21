@@ -85,35 +85,6 @@ public ref struct InternalGroupBy<TEnumerator, TKey, TElement> : IStructEnumerat
         return false;
     }
 
-    private ReadOnlyGrouping<TKey, TElement>[] LookupToArray(ref Base.Lookup<TKey, TElement> lookup)
-    {
-        // Because we need to collect all groupings from the lookup into an array
-        if (lookup.Count == 0)
-        {
-            return Array.Empty<ReadOnlyGrouping<TKey, TElement>>();
-        }
-
-        // Because we minimize allocations by using a pre-allocated array with known count
-        int count = lookup.Count;
-        var groupings = new ReadOnlyGrouping<TKey, TElement>[count];
-        int arrayIndex = 0;
-
-        // Because entries in the lookup are stored with 1-based indexing
-        for (int i = 1; i <= count; i++)
-        {
-            var grouping = lookup.GetGroupingByIndex(i);
-            groupings[arrayIndex++] = new ReadOnlyGrouping<TKey, TElement>(in grouping);
-        }
-
-        // Because we may have skipped empty entries, resize if needed
-        if (arrayIndex < count)
-        {
-            Array.Resize(ref groupings, arrayIndex);
-        }
-
-        return groupings;
-    }
-
     private void Initialize()
     {
         if (!_initialized)
