@@ -38,14 +38,14 @@ public static class ToArrayHelper
         
         return [];
     }
-
+    
     public static TOut[] ToArray<TEnumerator, TIn, TOut>(
-        this StructEnumerable<InternalSelect<TEnumerator, TIn, TOut>, TOut> enumerable)
+        this StructEnumerable<InternalWhereSelect<TEnumerator, TIn, TOut>, TOut> enumerable)
         where TEnumerator : struct, IStructEnumerator<TIn>, allows ref struct
     {
-        return enumerable.Enumerator.FromArrayBuilder<InternalSelect<TEnumerator, TIn, TOut>, TOut>();
+        return enumerable.Enumerator.FromArrayBuilder<InternalWhereSelect<TEnumerator, TIn, TOut>, TOut>();
     }
-
+    
     public static T[] ToArray<TEnumerator, T>(this StructEnumerable<InternalWhere<TEnumerator, T>, T> enumerable)
         where TEnumerator : struct, IStructEnumerator<T>, allows ref struct
     {
@@ -77,7 +77,7 @@ public static class ToArrayHelper
             }
         }
 
-        return result;
+        return enumerable.Enumerator.FromArrayBuilder<TEnumerator, T>();
     }
     
     private static T[] FromArrayBuilder<TEnumerator, T>(this TEnumerator enumerator)
