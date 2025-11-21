@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using PerformanceBenchmarks.Core.Abstractions;
 using PerformanceBenchmarks.Core.Base;
 using ZLinq.Linq;
@@ -82,12 +83,14 @@ public ref struct InternalWhere<TEnumerator, TIn> : IStructEnumerator<TIn>
 //concrete - array
 public ref struct InternalWhereArray<TIn> : IStructEnumerator<TIn>
 {
-    internal ArrayStructEnumerator<TIn> _source;
+    private ArrayStructEnumerator<TIn> _source;
+    private Span<TIn> _span;
     internal readonly Func<TIn, bool> _filter;
 
     public InternalWhereArray(ArrayStructEnumerator<TIn> source, Func<TIn, bool> filter)
     {
         _source = source;
+        _span = source.Array.AsSpan();
         _filter = filter;
     }
 
@@ -98,12 +101,12 @@ public ref struct InternalWhereArray<TIn> : IStructEnumerator<TIn>
 
     public bool Next(ref TIn current)
     {
-        TIn? fromSource = default(TIn);
-        while (_source.Next(ref fromSource))
+        while (_source.Index < _source.Count - 1)
         {
-            if (_filter(fromSource))
+            var item = _span[++_source.Index];
+            if (_filter(item))
             {
-                current = fromSource;
+                current = item;
 
                 return true;
             }
@@ -120,8 +123,6 @@ public ref struct InternalWhereArray<TIn> : IStructEnumerator<TIn>
 
     public bool GetUnderlying(ref ReadOnlySpan<TIn> span)
     {
-        span = default;
-
         return false;
     }
 
@@ -132,9 +133,9 @@ public ref struct InternalWhereArray<TIn> : IStructEnumerator<TIn>
 public ref struct InternalWhereSelect<TEnumerator, TIn, TOut> : IStructEnumerator<TOut>
     where TEnumerator : struct, IStructEnumerator<TIn>, allows ref struct
 {
-    internal TEnumerator _source;
-    internal readonly Func<TIn, TOut> _selector;
-    internal readonly Func<TOut, bool> _filter;
+    private TEnumerator _source;
+    private readonly Func<TIn, TOut> _selector;
+    private readonly Func<TOut, bool> _filter;
 
     public InternalWhereSelect(TEnumerator source, Func<TIn, TOut> selector, Func<TOut, bool> filter)
     {
@@ -167,14 +168,12 @@ public ref struct InternalWhereSelect<TEnumerator, TIn, TOut> : IStructEnumerato
 
     public bool GetCountToLeftEnumerate(out int count)
     {
-        count = 0;
+        Unsafe.SkipInit(out count);
         return false;
     }
 
     public bool GetUnderlying(ref ReadOnlySpan<TOut> span)
     {
-        span = default;
-
         return false;
     }
 

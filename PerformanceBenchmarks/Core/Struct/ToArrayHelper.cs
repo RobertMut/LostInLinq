@@ -75,6 +75,8 @@ public static class ToArrayHelper
             {
                 result[idx++] = current;
             }
+
+            return result;
         }
 
         return enumerable.Enumerator.FromArrayBuilder<TEnumerator, T>();

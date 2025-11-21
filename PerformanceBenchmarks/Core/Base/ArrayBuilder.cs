@@ -5,7 +5,7 @@ namespace PerformanceBenchmarks.Core.Base;
 
 public ref struct ArrayBuilder<T> 
 {
-    private const int DefaultCapacity = 5;
+    private const int DefaultCapacity = 4;
     private T[] _buffer;
     private SmallBuffer<T[]> _buffers;
     private int _count;

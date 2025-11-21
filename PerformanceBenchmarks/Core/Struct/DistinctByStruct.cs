@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using MyHashSet.MinimalHashSet;
 using PerformanceBenchmarks.Core.Abstractions;
 using PerformanceBenchmarks.Core.Base;
@@ -59,8 +60,8 @@ public ref struct InternalDistinctBy<TEnumerator, TIn, TKey> : IStructEnumerator
 
     public bool GetCountToLeftEnumerate(out int count)
     {
-        count = 0;
-
+        Unsafe.SkipInit(out count);
+        
         return false;
     }
 

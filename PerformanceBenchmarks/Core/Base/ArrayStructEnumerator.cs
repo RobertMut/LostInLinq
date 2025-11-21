@@ -4,27 +4,27 @@ namespace PerformanceBenchmarks.Core.Base;
 
 public ref struct ArrayStructEnumerator<T> : IStructEnumerator<T>
 {
-    private readonly T[] _array;
-    private int _index;
-    private readonly int _count;
+    internal readonly T[] Array;
+    internal int Index;
+    internal readonly int Count;
 
     public ArrayStructEnumerator(T[] array)
     {
-        _array = array ?? throw new ArgumentNullException(nameof(array));
-        _count = array.Length;
-        _index = -1;
+        Array = array ?? throw new ArgumentNullException(nameof(array));
+        Count = array.Length;
+        Index = -1;
     }
     
     public void Dispose()
     {
-        _index = -1;
+        Index = -1;
     }
 
     public bool Next(ref T current)
     {
-        if (_index < _count - 1)
+        if (Index < Count - 1)
         {
-            current = _array[++_index];
+            current = Array[++Index];
             return true;
         }
 
@@ -34,32 +34,32 @@ public ref struct ArrayStructEnumerator<T> : IStructEnumerator<T>
 
     public bool GetCountToLeftEnumerate(out int count)
     {
-        if (_index < 0)
+        if (Index < 0)
         {
-            count = _count;
+            count = Count;
 
             return true;
         }
         
-        if(_index >= _count)
+        if(Index >= Count)
         {
             count = 0;
             return false;
         }
         
-        count = _count - _index - 1;
+        count = Count - Index - 1;
         return true;
     }
 
     public bool GetUnderlying(ref ReadOnlySpan<T> span)
     {
-        if(_array == null || _count == 0)
+        if(Array == null || Count == 0)
         {
             span = default(ReadOnlySpan<T>);
             return false;
         }
         
-        span = _array.AsSpan();
+        span = Array.AsSpan();
 
         return true;
     }

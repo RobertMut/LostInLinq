@@ -62,7 +62,6 @@ public ref struct InternalGroupBy<TEnumerator, TKey, TElement> : IStructEnumerat
             return true;
         }
         
-        current = default;
         return false;
     }
 
@@ -76,7 +75,6 @@ public ref struct InternalGroupBy<TEnumerator, TKey, TElement> : IStructEnumerat
 
     public bool GetUnderlying(ref ReadOnlySpan<ReadOnlyGrouping<TKey, TElement>> span)
     {
-        span = default;
         return false;
     }
 
