@@ -102,6 +102,8 @@ public ref struct SmallBuffer<T> //approach found here: https://www.jacksondunst
     private T _item11;
     private T _item12;
     private T _item13;
+    private T _item14;
+    private T _item15;
 
     public T this[int index]
     {
@@ -122,6 +124,8 @@ public ref struct SmallBuffer<T> //approach found here: https://www.jacksondunst
                 10 => _item11,
                 11 => _item12,
                 12 => _item13,
+                13 => _item14,
+                14 => _item15,
                 _ => throw new IndexOutOfRangeException()
             };
         }
@@ -142,6 +146,8 @@ public ref struct SmallBuffer<T> //approach found here: https://www.jacksondunst
                 case 10: _item11 = value; break;
                 case 11: _item12 = value; break;
                 case 12: _item13 = value; break;
+                case 13: _item14 = value; break;
+                case 14: _item15 = value; break;
             }
         }
     }
