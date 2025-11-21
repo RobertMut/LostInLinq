@@ -25,10 +25,4 @@
       <Content Include="MinimalHashSet\MyHashSet.UnitTests\UnitTest.cs" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Reference Include="PerformanceBenchmarks">
-        <HintPath>..\PerformanceBenchmarks.Tests\bin\Release\net9.0\PerformanceBenchmarks.dll</HintPath>
-      </Reference>
-    </ItemGroup>
-
 </Project>

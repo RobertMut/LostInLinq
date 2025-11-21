@@ -23,10 +23,10 @@ public static class WhereStruct
     public static StructEnumerable<InternalWhereSelect<TEnumerator, TIn, TOut>, TOut> StructWhere<
         TEnumerator, TIn, TOut>(
         this StructEnumerable<InternalSelect<TEnumerator, TIn, TOut>, TOut> source,
-        Func<TIn, bool> filter)
+        Func<TOut, bool> filter)
         where TEnumerator : struct, IStructEnumerator<TIn>, allows ref struct
     {
-        return new(new InternalWhereSelect<TEnumerator, TIn, TOut>(source.Enumerator._source, filter, source.Enumerator.Selector));
+        return new(new InternalWhereSelect<TEnumerator, TIn, TOut>(source.Enumerator._source, source.Enumerator.Selector, filter));
     }
 }
 
@@ -133,14 +133,14 @@ public ref struct InternalWhereSelect<TEnumerator, TIn, TOut> : IStructEnumerato
     where TEnumerator : struct, IStructEnumerator<TIn>, allows ref struct
 {
     internal TEnumerator _source;
-    internal readonly Func<TIn, bool> _filter;
     internal readonly Func<TIn, TOut> _selector;
+    internal readonly Func<TOut, bool> _filter;
 
-    public InternalWhereSelect(TEnumerator source, Func<TIn, bool> filter, Func<TIn, TOut> selector)
+    public InternalWhereSelect(TEnumerator source, Func<TIn, TOut> selector, Func<TOut, bool> filter)
     {
         _source = source;
-        _filter = filter;
         _selector = selector;
+        _filter = filter;
     }
 
     public void Dispose()
@@ -153,9 +153,10 @@ public ref struct InternalWhereSelect<TEnumerator, TIn, TOut> : IStructEnumerato
         TIn source = default(TIn);
         while (_source.Next(ref source))
         {
-            if (_filter(source))
+            TOut selected = _selector(source);
+            if (_filter(selected))
             {
-                current = _selector(source);
+                current = selected;
 
                 return true;
             }
