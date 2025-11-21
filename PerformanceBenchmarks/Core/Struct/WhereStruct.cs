@@ -20,13 +20,13 @@ public static class WhereStruct
         return new(new InternalWhere<TEnumerator, T>(source.Enumerator, filter));
     }
 
-    public static StructEnumerable<InternalWhere<InternalSelect<TEnumerator, TIn, TOut>, TOut>, TOut> StructWhere<
+    public static StructEnumerable<InternalWhereSelect<TEnumerator, TIn, TOut>, TOut> StructWhere<
         TEnumerator, TIn, TOut>(
         this StructEnumerable<InternalSelect<TEnumerator, TIn, TOut>, TOut> source,
-        Func<TOut, bool> filter)
+        Func<TIn, bool> filter)
         where TEnumerator : struct, IStructEnumerator<TIn>, allows ref struct
     {
-        return new(new InternalWhere<InternalSelect<TEnumerator, TIn, TOut>, TOut>(source.Enumerator, filter));
+        return new(new InternalWhereSelect<TEnumerator, TIn, TOut>(source.Enumerator._source, filter, source.Enumerator.Selector));
     }
 }
 
@@ -65,10 +65,8 @@ public ref struct InternalWhere<TEnumerator, TIn> : IStructEnumerator<TIn>
 
     public bool GetCountToLeftEnumerate(out int count)
     {
-        bool val = _source.GetCountToLeftEnumerate(out int enumeratorCount);
-
-        count = enumeratorCount;
-        return val;
+        count = 0;
+        return false;
     }
 
     public bool GetUnderlying(ref ReadOnlySpan<TIn> span)
@@ -116,10 +114,8 @@ public ref struct InternalWhereArray<TIn> : IStructEnumerator<TIn>
 
     public bool GetCountToLeftEnumerate(out int count)
     {
-        bool val = _source.GetCountToLeftEnumerate(out int enumeratorCount);
-
-        count = enumeratorCount;
-        return val;
+        count = 0;
+        return false;
     }
 
     public bool GetUnderlying(ref ReadOnlySpan<TIn> span)
@@ -170,85 +166,8 @@ public ref struct InternalWhereSelect<TEnumerator, TIn, TOut> : IStructEnumerato
 
     public bool GetCountToLeftEnumerate(out int count)
     {
-        bool val = _source.GetCountToLeftEnumerate(out int enumeratorCount);
-
-        count = enumeratorCount;
-        return val;
-    }
-
-    public bool GetUnderlying(ref ReadOnlySpan<TOut> span)
-    {
-        span = default;
-
+        count = 0;
         return false;
-    }
-
-    public bool TryCopy(ref Span<TOut> destination, int offset)
-    {
-        return false;
-    }
-}
-
-//concrete - array
-public ref struct InternalWhereSelectArray<TIn, TOut> : IStructEnumerator<TOut>
-{
-    private readonly TIn[] _source;
-    private int _index;
-    private readonly int _count;
-    private readonly Func<TIn, bool> _filter;
-    private readonly Func<TIn, TOut> _selector;
-
-    public InternalWhereSelectArray(TIn[] source, Func<TIn, bool> filter, Func<TIn, TOut> selector)
-    {
-        _source = source;
-        _filter = filter;
-        _selector = selector;
-        _index = -1;
-        _count = source.Length;
-    }
-
-    public void Dispose()
-    {
-        _index = -1;
-    }
-
-    public bool Next(ref TOut current)
-    {
-        TIn source = default(TIn);
-
-        while (_index < _count - 1)
-        {
-            _index++;
-            source = _source[_index];
-
-            if (_filter(source))
-            {
-                current = _selector(source);
-
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    public bool GetCountToLeftEnumerate(out int count)
-    {
-        if (_index < 0)
-        {
-            count = _count;
-
-            return true;
-        }
-
-        if (_index >= _count)
-        {
-            count = 0;
-            return false;
-        }
-
-        count = _count - _index - 1;
-        return true;
     }
 
     public bool GetUnderlying(ref ReadOnlySpan<TOut> span)
